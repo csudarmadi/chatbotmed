@@ -1,0 +1,88 @@
+{
+  "obat": [
+    {
+      "nama": "Atorvastatin",
+      "indikasi": "Menurunkan kolesterol LDL dan trigliserida, meningkatkan kolesterol HDL.",
+      "dosis": "10-80 mg sekali sehari, tergantung kondisi pasien.",
+      "efek_samping": [
+        "Nyeri otot",
+        "Gangguan pencernaan",
+        "Peningkatan enzim hati"
+      ],
+      "interaksi_obat": [
+        {
+          "obat": "Antibiotik (misalnya: Erythromycin)",
+          "efek": "Meningkatkan risiko nyeri otot."
+        },
+        {
+          "obat": "Warfarin",
+          "efek": "Meningkatkan risiko perdarahan."
+        }
+      ],
+      "interaksi_makanan": [
+        {
+          "makanan": "Jeruk bali",
+          "efek": "Meningkatkan kadar obat dalam darah."
+        }
+      ],
+      "catatan_khusus": "Hindari alkohol karena dapat meningkatkan risiko kerusakan hati."
+    },
+    {
+      "nama": "Rosuvastatin",
+      "indikasi": "Menurunkan kolesterol LDL dan trigliserida.",
+      "dosis": "5-40 mg sekali sehari.",
+      "efek_samping": [
+        "Sakit kepala",
+        "Nyeri otot ringan"
+      ],
+      "interaksi_obat": [
+        {
+          "obat": "Cyclosporine",
+          "efek": "Meningkatkan risiko efek samping."
+        }
+      ],
+      "interaksi_makanan": [
+        {
+          "makanan": "Makanan tinggi lemak",
+          "efek": "Mengurangi penyerapan obat."
+        }
+      ],
+      "catatan_khusus": "Minum obat pada malam hari untuk hasil optimal."
+    }
+  ],
+  "hipertensi": [
+    {
+      "nama": "Amlodipine",
+      "indikasi": "Menurunkan tekanan darah tinggi.",
+      "dosis": "5-10 mg sekali sehari.",
+      "efek_samping": [
+        "Pembengkakan kaki",
+        "Sakit kepala"
+      ],
+      "interaksi_obat": [
+        {
+          "obat": "Simvastatin",
+          "efek": "Meningkatkan risiko nyeri otot."
+        }
+      ]
+    }
+  ],
+  "diabetes": [
+    {
+      "nama": "Metformin",
+      "indikasi": "Mengontrol gula darah pada diabetes tipe 2.",
+      "dosis": "500-2000 mg per hari, dibagi dalam 2-3 dosis.",
+      "efek_samping": [
+        "Mual",
+        "Diare"
+      ],
+      "interaksi_obat": [
+        {
+          "obat": "Kontras yodium",
+          "efek": "Risiko gangguan ginjal."
+        }
+      ],
+      "catatan_khusus": "Minum setelah makan untuk mengurangi efek samping."
+    }
+  ]
+}
