@@ -136,6 +136,7 @@ class _ObatListPageState extends State<ObatListPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: const Color(0xFF388E3C), // Hijau tua
         title: const Text(
           'Daftar Obat',
           style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
@@ -166,9 +167,11 @@ class _ObatListPageState extends State<ObatListPage> {
           //),
         //],
       ),
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _navigateToInputPage(),
-        child: const Icon(Icons.add),
+        icon: const Icon(Icons.add),
+        label: const Text('Tambah Obat'),
+        backgroundColor: const Color(0xFF66BB6A), // Hijau terang kontras
       ),
       body: Column(
         children: [
@@ -177,14 +180,14 @@ class _ObatListPageState extends State<ObatListPage> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                _buildActionIcon(
-                  icon: Icons.search,
-                  label: 'Cari Obat',
-                  onTap: () => showSearch(
-                    context: context,
-                    delegate: _ObatSearchDelegate(_refreshData),
-                  ),
-                ),
+                //_buildActionIcon(
+                //  icon: Icons.search,
+                //  label: 'Cari Obat',
+                //  onTap: () => showSearch(
+                //    context: context,
+                //    delegate: _ObatSearchDelegate(_refreshData),
+                //  ),
+                //),
                 _buildActionIcon(
                   icon: Icons.chat,
                   label: 'Chatbot',
@@ -248,6 +251,8 @@ class _ObatListPageState extends State<ObatListPage> {
                         decoration: InputDecoration(
                           labelText: 'Cari Obat',
                           prefixIcon: const Icon(Icons.search),
+                          filled: true,
+                          fillColor: const Color(0xFFE9FCEB),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
                           ),
@@ -287,14 +292,14 @@ class _ObatListPageState extends State<ObatListPage> {
         mainAxisSize: MainAxisSize.min,
         children: [
           CircleAvatar(
-            radius: 32,
-            backgroundColor:const Color(0xFFB9FBC0), // Mint green
+            radius: 34,
+            backgroundColor: Colors.teal[800],
             child: Icon(icon, size: 36, color: Colors.teal.shade700),
           ),
           const SizedBox(height: 6),
           Text(
             label,
-            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
           ),
         ],
       ),
@@ -304,36 +309,80 @@ class _ObatListPageState extends State<ObatListPage> {
   Widget _buildObatCard(Obat obat) {
     return Card(
       elevation: 2,
-      color: const Color(0xFFDAF5DC), // light pastel green
-      shadowColor: Colors.green.shade100,
-      margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      color: const Color(0xFFE9FCEB), // light pastel green
+      shadowColor: Colors.green.shade200,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: const BorderSide(color: Color(0xFFA8D5BA), width: 1.2),
+      ),
+      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       child: ListTile(
-        title: Text(obat.nama),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        title: Text(
+          obat.nama,
+          style: const TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: Colors.black87,
+          ),
+        ),
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Stok: ${obat.qty}'),
-            Text('Dosis: ${obat.jumlahPerDosis}x${obat.dosisPerHari}/hari'),
+            const SizedBox(height: 6),
+            Text(
+              'Stok: ${obat.qty}',
+              style: const TextStyle(fontSize: 16),
+            ),
+            Text(
+              'Dosis: ${obat.jumlahPerDosis}x${obat.dosisPerHari}/hari',
+              style: const TextStyle(fontSize: 16),
+            ),
+            // Text(
+            //   'Jadwal: ${obat.jadwal.map((t) => t.format(context)).join(', ')}',
+            //   style: const TextStyle(fontSize: 16),
+            // ),
             if (obat.perluBeliObat())
-              const Text(
-                'Perlu beli obat!',
-                style: TextStyle(color: Colors.red),
+              const Padding(
+                padding: EdgeInsets.only(top: 4),
+                child: Text(
+                  'Perlu beli obat!',
+                  style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold, fontSize: 14),
+                ),
               ),
           ],
         ),
-        trailing: Row(
-          mainAxisSize: MainAxisSize.min,
+/*         trailing: Wrap(
+          spacing: 4,
           children: [
             IconButton(
-              icon: const Icon(Icons.medical_services),
+              icon: const Icon(Icons.medical_services, size: 28, color: Color(0xFF4CAF50)),
               onPressed: () => _confirmTaken(obat),
               tooltip: 'Konfirmasi Minum Obat',
             ),
             IconButton(
-              icon: const Icon(Icons.edit),
+              icon: const Icon(Icons.edit, size: 26, color: Colors.teal),
               onPressed: () => _navigateToInputPage(obat: obat),
               tooltip: 'Edit Obat',
             ),
+          ],
+        ), */
+        trailing: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            IconButton(
+              icon: Icon(Icons.medical_services),
+              onPressed: () => _confirmTaken(obat),
+            ),
+            Text('Konsumsi', style: TextStyle(fontSize: 12)),
+
+            SizedBox(height: 8),
+
+            IconButton(
+              icon: Icon(Icons.edit),
+              onPressed: () => _navigateToInputPage(obat: obat),
+            ),
+            Text('Edit', style: TextStyle(fontSize: 12)),
           ],
         ),
         onTap: () => _showObatDetails(context, obat),
@@ -404,7 +453,7 @@ class _ObatListPageState extends State<ObatListPage> {
   }
 }
 
-class _ObatSearchDelegate extends SearchDelegate {
+/* class _ObatSearchDelegate extends SearchDelegate {
   final Function() refreshData;
 
   _ObatSearchDelegate(this.refreshData);
@@ -474,4 +523,4 @@ class _ObatSearchDelegate extends SearchDelegate {
       },
     );
   }
-}
+} */

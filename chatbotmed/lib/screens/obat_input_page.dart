@@ -107,6 +107,7 @@ class _ObatInputPageState extends State<ObatInputPage> {
       if (!mounted) return;
 
       // Schedule reminders for each medication time
+      ReminderService.cancelAllReminders();
       for (final timeOfDay in obat.jadwal) {
         final time = Time(timeOfDay.hour, timeOfDay.minute);
         await ReminderService.scheduleDailyReminder(
@@ -262,8 +263,21 @@ class _ObatInputPageState extends State<ObatInputPage> {
       controller: controller,
       decoration: InputDecoration(
         labelText: label,
-        labelStyle: const TextStyle(fontSize: 18),
-        border: const OutlineInputBorder(),
+        labelStyle: const TextStyle(fontSize: 14),
+        filled: true,
+        fillColor: const Color(0xFFFFFFFF), // putih
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Color(0xFFA8D5BA)), // hijau pastel
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Color(0xFFA8D5BA), width: 1.5),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Color(0xFF6CB28E), width: 2),
+        ),
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 16,
           vertical: 14,
@@ -273,11 +287,19 @@ class _ObatInputPageState extends State<ObatInputPage> {
       keyboardType: keyboardType,
       validator: validator,
       maxLines: maxLines,
+      textCapitalization: TextCapitalization.characters,
+      onChanged: (value) {
+        controller.value = controller.value.copyWith(
+          text: value.toUpperCase(),
+          selection: TextSelection.collapsed(offset: value.length),
+        );
+      },
     );
   }
 
   Widget _buildDateSelector() {
     return Card(
+      color: const Color(0xFFE9FCEB), // 🌿 hijau pastel terang, sama seperti input box
       elevation: 2,
       child: ListTile(
         title: Text(
@@ -324,6 +346,7 @@ class _ObatInputPageState extends State<ObatInputPage> {
         ElevatedButton(
           onPressed: () => _selectTime(context),
           style: ElevatedButton.styleFrom(
+            backgroundColor: const Color(0xFF66BB6A),
             padding: const EdgeInsets.symmetric(vertical: 14),
             minimumSize: const Size.fromHeight(50),
           ),
@@ -339,7 +362,7 @@ class _ObatInputPageState extends State<ObatInputPage> {
   Widget _buildSaveButton() {
     return ElevatedButton(
       style: ElevatedButton.styleFrom(
-        backgroundColor: const Color(0xFFA8D5BA), // pastel green
+        backgroundColor: const Color(0xFF66BB6A),
         foregroundColor: Colors.white,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         padding: const EdgeInsets.symmetric(vertical: 16),
@@ -347,7 +370,7 @@ class _ObatInputPageState extends State<ObatInputPage> {
       onPressed: _saveObat,
       child: Text(
         widget.obat == null ? 'Simpan Obat' : 'Update Obat',
-        style: const TextStyle(fontSize: 20),
+        style: const TextStyle(fontSize: 18),
       ),
     );
   }

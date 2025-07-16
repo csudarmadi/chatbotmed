@@ -7,6 +7,7 @@ class ReminderService {
     const android = AndroidInitializationSettings('@mipmap/ic_launcher');
     const ios = IOSInitializationSettings();
     const settings = InitializationSettings(android: android, iOS: ios);
+
     await _notifications.initialize(settings);
   }
 
@@ -20,12 +21,11 @@ class ReminderService {
       'Daily Reminders',
       channelDescription: 'Reminders to take your medication daily',
       importance: Importance.max,
-      priority: Priority.high,
       playSound: true,
+      priority: Priority.high,
     );
 
     const iosDetails = IOSNotificationDetails();
-
     final notificationDetails = NotificationDetails(
       android: androidDetails,
       iOS: iosDetails,
