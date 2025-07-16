@@ -28,6 +28,25 @@ class ObatService {
     }
   }
 
+  static Future<bool> consumeObatIfStockAvailable(String namaObat) async {
+    final list = await getObatList();
+    final index = list.indexWhere((o) => o.nama == namaObat);
+    if (index == -1) return false;
+
+    final obat = list[index];
+
+    if (obat.qty < obat.jumlahPerDosis) {
+      return false; // stok tidak cukup
+    }
+
+    // Kurangi stok dan catat tanggal konsumsi
+    obat.confirmTaken();
+    list[index] = obat;
+
+    await _saveAll(list);
+    return true;
+  }
+
   // Save medicine
   static Future<void> saveObat(Obat obat) async {
     final list = await getObatList();
