@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import '../models/obat.dart';
 import '../services/obat_service.dart';
 import '../services/reminder_service.dart';
@@ -85,8 +86,6 @@ class _ObatInputPageState extends State<ObatInputPage> {
     if (!_formKey.currentState!.validate()) return;
 
     try {
-      await ReminderService.initialize();
-
       final obat = Obat(
         nama: _namaController.text,
         qty: int.parse(_qtyController.text),
@@ -109,21 +108,11 @@ class _ObatInputPageState extends State<ObatInputPage> {
 
       // Schedule reminders for each medication time
       for (final timeOfDay in obat.jadwal) {
-        // Convert TimeOfDay to DateTime for today
-        final now = DateTime.now();
-        final scheduledDateTime = DateTime(
-          now.year,
-          now.month,
-          now.day,
-          timeOfDay.hour,
-          timeOfDay.minute,
-        );
-
-        await ReminderService.scheduleMedicationReminder(
-          id: '${obat.nama}${timeOfDay.hour}${timeOfDay.minute}'.hashCode,
+        final time = Time(timeOfDay.hour, timeOfDay.minute);
+        await ReminderService.scheduleDailyReminder(
+          id: '${obat.nama}${time.hour}${time.minute}'.hashCode,
           medicineName: obat.nama,
-          scheduledTime: scheduledDateTime,
-          isRepeating: true, // Set to true for daily repeats
+          time: time,
         );
       }
 

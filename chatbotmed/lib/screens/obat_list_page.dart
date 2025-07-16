@@ -49,9 +49,19 @@ class _ObatListPageState extends State<ObatListPage> {
 
   Future<void> _confirmTaken(Obat obat) async {
     try {
-      final updatedObat = obat..qty -= obat.jumlahPerDosis;
-      await ObatService.updateObat(updatedObat);
-      if (mounted) await _refreshData();
+      final success = await ObatService.consumeObatIfStockAvailable(obat.nama);
+      if (mounted) {
+        if (success) {
+          await _refreshData(); // refresh tampilan setelah update
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Stok obat tidak mencukupi!'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'screens/login_page.dart';
 import 'screens/obat_list_page.dart';
 import 'screens/chatbot_page.dart';
-import 'screens/obat_history_page_v00.dart';
-import 'services/reminder_service.dart'; // Add this import
+import 'screens/obat_history_page.dart';
+import 'services/reminder_service.dart';
 
 // Constants
 const String appTitle = 'Pendamping Obat';
@@ -19,14 +19,10 @@ class AppRoutes {
   static const obatHistory = '/obat-history';
 }
 
-final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-    FlutterLocalNotificationsPlugin();
-
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
-  await ReminderService.initialize(); // Add this
-
+  await initializeDateFormatting('id_ID', null); // ⬅️ Tambahkan baris ini
+  await ReminderService.initialize(); // Just this
   runApp(MyApp());
 }
 
@@ -82,7 +78,7 @@ class _SessionCheckerState extends State<SessionChecker> {
   Future<void> _checkSession() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      await prefs.clear();
+      //await prefs.clear();
       final nama = prefs.getString('nama');
 
       if (!mounted) return;
