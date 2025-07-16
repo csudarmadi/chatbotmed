@@ -1,10 +1,6 @@
-// lib/screens/obat_history_page.dart
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'dart:convert';  // Add this line at the top of the file
-import '../services/device_service.dart';
-import '../models/obat.dart';
 import 'package:intl/intl.dart';
+import '../services/obat_service.dart';
 
 class ObatHistoryPage extends StatefulWidget {
   const ObatHistoryPage({super.key});
@@ -14,24 +10,21 @@ class ObatHistoryPage extends StatefulWidget {
 }
 
 class _ObatHistoryPageState extends State<ObatHistoryPage> {
-  List<Obat> obatList = [];
-  late String deviceID;
-  late String obatKey;
+  late Future<List<Map<String, dynamic>>> _historyFuture;
+  final DateFormat _dateFormat = DateFormat('EEEE, dd MMMM yyyy - HH:mm', 'id_ID');
+  bool _showMissedDoses = false;
 
   @override
   void initState() {
     super.initState();
-    _loadObat();
+    _loadHistory();
   }
 
-  Future<void> _loadObat() async {
-    deviceID = await DeviceService.getDeviceId();
-    obatKey = 'obatList_$deviceID';
-    
-    final prefs = await SharedPreferences.getInstance();
-    final jsonList = prefs.getStringList(obatKey) ?? [];
+  void _loadHistory() {
     setState(() {
-      obatList = jsonList.map((json) => Obat.fromJson(jsonDecode(json))).toList();
+      _historyFuture = _showMissedDoses 
+          ? ObatService.getMissedDoses()
+          : ObatService.getConsumptionHistory();
     });
   }
 
@@ -39,35 +32,67 @@ class _ObatHistoryPageState extends State<ObatHistoryPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Riwayat Obat'),
+        title: const Text('Riwayat Obat'),
+        actions: [
+          IconButton(
+            icon: Icon(_showMissedDoses ? Icons.medical_services : Icons.warning),
+            onPressed: () {
+              setState(() {
+                _showMissedDoses = !_showMissedDoses;
+                _loadHistory();
+              });
+            },
+            tooltip: _showMissedDoses ? 'Lihat Riwayat' : 'Lihat Yang Terlewat',
+          ),
+        ],
       ),
-      body: ListView.builder(
-        itemCount: obatList.length,
-        itemBuilder: (context, index) {
-          final obat = obatList[index];
-          return ExpansionTile(
-            title: Text(obat.nama),
-            subtitle: Text('Stok: ${obat.qty}'),
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('Dosis: ${obat.jumlahPerDosis}x${obat.dosisPerHari}/hari'),
-                    Text('Dibeli: ${DateFormat('dd/MM/yyyy').format(obat.purchaseDate)}'),
-                    Text('Perlu beli lagi: ${DateFormat('dd/MM/yyyy').format(obat.nextPurchaseDate)}'),
-                    SizedBox(height: 8),
-                    Text('Riwayat Penggunaan:', style: TextStyle(fontWeight: FontWeight.bold)),
-                    ...obat.takenDates.map((date) => 
-                      ListTile(
-                        title: Text(DateFormat('dd/MM/yyyy HH:mm').format(date)),
-                      )
-                    ),
-                  ],
+      body: FutureBuilder<List<Map<String, dynamic>>>(
+        future: _historyFuture,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          if (snapshot.hasError) {
+            return Center(child: Text('Error: ${snapshot.error}'));
+          }
+
+          final history = snapshot.data ?? [];
+
+          if (history.isEmpty) {
+            return Center(
+              child: Text(_showMissedDoses
+                  ? 'Tidak ada obat yang terlewat'
+                  : 'Belum ada riwayat konsumsi'),
+            );
+          }
+
+          return ListView.builder(
+            itemCount: history.length,
+            itemBuilder: (context, index) {
+              final entry = history[index];
+              return Card(
+                margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                child: ListTile(
+                  leading: Icon(
+                    _showMissedDoses ? Icons.warning : Icons.medical_services,
+                    color: _showMissedDoses ? Colors.orange : Colors.green,
+                  ),
+                  title: Text(entry['medicine']),
+                  subtitle: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(_dateFormat.format(entry[_showMissedDoses 
+                          ? 'scheduledTime' 
+                          : 'date'])),
+                      if (!_showMissedDoses && entry['notes']?.isNotEmpty == true)
+                        Text('Catatan: ${entry['notes']}'),
+                    ],
+                  ),
+                  trailing: Text('${entry['dose']} dosis'),
                 ),
-              ),
-            ],
+              );
+            },
           );
         },
       ),

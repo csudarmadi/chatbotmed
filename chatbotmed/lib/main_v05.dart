@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:timezone/data/latest.dart' as tz;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'screens/login_page.dart';
 import 'screens/obat_list_page.dart';
 import 'screens/chatbot_page.dart';
 import 'screens/obat_history_page_v00.dart';
-import 'services/reminder_service.dart'; // Add this import
 
 // Constants
 const String appTitle = 'Pendamping Obat';
@@ -19,28 +19,50 @@ class AppRoutes {
   static const obatHistory = '/obat-history';
 }
 
+// Add this helper function
+Future<void> _initializeTimeZones() async {
+  tz.initializeTimeZones();
+}
+
+// Notification service initialization
+Future<void> _initializeNotifications() async {
+  const AndroidInitializationSettings initializationSettingsAndroid =
+      AndroidInitializationSettings('@mipmap/ic_launcher');
+      
+  const InitializationSettings initializationSettings = InitializationSettings(
+    android: initializationSettingsAndroid,
+  );
+  
+  try {
+    await flutterLocalNotificationsPlugin.initialize(initializationSettings);
+  } catch (e) {
+    debugPrint('Notification initialization failed: $e');
+  }
+}
+
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
     FlutterLocalNotificationsPlugin();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
-  await ReminderService.initialize(); // Add this
+  // Initialize services
+  await Future.wait([
+    _initializeTimeZones(),
+    _initializeNotifications(),
+  ]);
 
-  runApp(MyApp());
+  runApp(const ChatApp());
 }
 
-class MyApp extends StatelessWidget {
-  MyApp({super.key});
-
-  final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+class ChatApp extends StatelessWidget {
+  const ChatApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: appTitle,
       debugShowCheckedModeBanner: false,
-      navigatorKey: navigatorKey,
       theme: ThemeData(
         primarySwatch: Colors.teal,
         visualDensity: VisualDensity.adaptivePlatformDensity,
@@ -82,7 +104,6 @@ class _SessionCheckerState extends State<SessionChecker> {
   Future<void> _checkSession() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      await prefs.clear();
       final nama = prefs.getString('nama');
 
       if (!mounted) return;
