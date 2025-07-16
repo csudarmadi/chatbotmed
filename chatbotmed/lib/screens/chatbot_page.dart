@@ -16,7 +16,7 @@ class _ChatbotPageState extends State<ChatbotPage> {
   final List<ChatMessage> _messages = [];
   bool _isLoading = false;
   final ScrollController _scrollController = ScrollController();
-  final String _apiUrl = "http://192.168.100.4:5000/chat"; // Move to config
+  final String _apiUrl = "http://192.168.100.204:5000/chat"; // Move to config
   
   @override
   void dispose() {

@@ -26,3 +26,8 @@
 {"timestamp": "2025-07-15T19:52:02.171635", "user": "Apakah itu metformin?", "bot": "Obat yang menurunkan kadar gula darah yang tinggi pada penderita diabetes tipe 2."}
 {"timestamp": "2025-07-15T19:53:12.663421", "user": "Apa itu metformin?", "bot": "Obat yang menurunkan kadar gula darah yang tinggi pada penderita diabetes tipe 2."}
 {"timestamp": "2025-07-15T19:53:21.711624", "user": "Berapa dosis makan metformin?", "bot": "500 mg sekali sehari, dapat ditingkatkan secara bertahap sesuai anjuran dokter."}
+{"timestamp": "2025-07-15T20:55:36.261548", "user": "Apa itu metformin?", "bot": "Obat yang menurunkan kadar gula darah yang tinggi pada penderita diabetes tipe 2."}
+{"timestamp": "2025-07-15T20:56:04.617932", "user": "Interaksi dengan amlodipine?", "bot": "{'dewasa': '5 mg sekali sehari (maks 10 mg), mulai 2,5 mg pada pasien lanjut usia atau berisiko.', 'anak_≥6_tahun': '2,5-5 mg sekali sehari.'}"}
+{"timestamp": "2025-07-16T10:53:13.885524", "user": "Apa itu metformin?", "bot": "Obat yang menurunkan kadar gula darah yang tinggi pada penderita diabetes tipe 2."}
+{"timestamp": "2025-07-16T10:53:22.112468", "user": "Apa itu amlodipine", "bot": "Menurunkan tekanan darah pada hipertensi dan meredakan angina kronis dengan melebarkan pembuluh darah."}
+{"timestamp": "2025-07-16T10:53:39.548206", "user": "Bagaimana jika amlodipine diminum bersamaan dengan metformin?", "bot": "{'dewasa': '5 mg sekali sehari (maks 10 mg), mulai 2,5 mg pada pasien lanjut usia atau berisiko.', 'anak_≥6_tahun': '2,5-5 mg sekali sehari.'}"}

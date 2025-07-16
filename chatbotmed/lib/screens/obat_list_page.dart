@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/obat.dart';
 import '../services/obat_service.dart';
 import 'obat_input_page.dart';
+import '../services/test_helpers.dart';
 
 class ObatListPage extends StatefulWidget {
   const ObatListPage({super.key});
@@ -84,6 +85,31 @@ class _ObatListPageState extends State<ObatListPage> {
     }
   }
 
+  Future<void> _handleReset() async {
+    try {
+      await TestHelper.fullReset();
+      
+      // Proper mounted check for State's context
+      if (!mounted) return;
+      
+      // Refresh UI
+      setState(() {});
+      
+      // Get fresh context for Scaffold
+      final freshContext = context;
+      if (!freshContext.mounted) return;
+      
+      ScaffoldMessenger.of(freshContext).showSnackBar(
+        const SnackBar(content: Text('Data berhasil direset')),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: ${e.toString()}')),
+      );
+    }
+  }
+
   List<Obat> _filterObatList(List<Obat> obatList, String query) {
     if (query.isEmpty) return obatList;
     return obatList.where((obat) =>
@@ -119,6 +145,10 @@ class _ObatListPageState extends State<ObatListPage> {
           IconButton(
             icon: const Icon(Icons.history),
             onPressed: () => Navigator.pushNamed(context, '/obat-history'),
+          ),
+          IconButton(
+            icon: const Icon(Icons.delete_forever),
+            onPressed: () => _handleReset(), // No context passed here
           ),
           IconButton(
             icon: const Icon(Icons.logout),

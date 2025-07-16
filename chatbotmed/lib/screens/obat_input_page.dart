@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../models/obat.dart';
 import '../services/obat_service.dart';
+import '../services/reminder_service.dart';
 
 class ObatInputPage extends StatefulWidget {
   final Obat? obat;
@@ -83,31 +84,56 @@ class _ObatInputPageState extends State<ObatInputPage> {
   Future<void> _saveObat() async {
     if (!_formKey.currentState!.validate()) return;
 
-    final obat = Obat(
-      nama: _namaController.text,
-      qty: int.parse(_qtyController.text),
-      dosisPerHari: int.parse(_dosisController.text),
-      jumlahPerDosis: int.parse(_jumlahDosisController.text),
-      jadwal: _selectedTimes,
-      purchaseDate: _purchaseDate ?? DateTime.now(),
-      usageNotes: _usageController.text,
-    );
-
     try {
+      await ReminderService.initialize();
+
+      final obat = Obat(
+        nama: _namaController.text,
+        qty: int.parse(_qtyController.text),
+        dosisPerHari: int.parse(_dosisController.text),
+        jumlahPerDosis: int.parse(_jumlahDosisController.text),
+        jadwal: _selectedTimes, // List<TimeOfDay>
+        purchaseDate: _purchaseDate ?? DateTime.now(),
+        usageNotes: _usageController.text,
+      );
+
+      // Save medication first
       if (widget.obat == null) {
         await ObatService.saveObat(obat);
       } else {
         await ObatService.updateObat(obat);
       }
 
-      if (mounted) {
-        Navigator.pop(context);
+      final currentContext = context;
+      if (!mounted) return;
+
+      // Schedule reminders for each medication time
+      for (final timeOfDay in obat.jadwal) {
+        // Convert TimeOfDay to DateTime for today
+        final now = DateTime.now();
+        final scheduledDateTime = DateTime(
+          now.year,
+          now.month,
+          now.day,
+          timeOfDay.hour,
+          timeOfDay.minute,
+        );
+
+        await ReminderService.scheduleMedicationReminder(
+          id: '${obat.nama}${timeOfDay.hour}${timeOfDay.minute}'.hashCode,
+          medicineName: obat.nama,
+          scheduledTime: scheduledDateTime,
+          isRepeating: true, // Set to true for daily repeats
+        );
       }
+
+      if (!currentContext.mounted) return;
+      Navigator.of(currentContext).pop();
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error: ${e.toString()}'),
+            content: Text('Gagal menyimpan: ${e.toString()}'),
             duration: const Duration(seconds: 3),
           ),
         );
