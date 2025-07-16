@@ -38,12 +38,36 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       navigatorKey: navigatorKey,
       theme: ThemeData(
-        primarySwatch: Colors.teal,
-        visualDensity: VisualDensity.adaptivePlatformDensity,
+        scaffoldBackgroundColor: const Color(0xFFDEFDE0), // 🌱 background soft green
+        primaryColor: const Color(0xFFA8D5BA), // 🌿 pastel green
+        colorScheme: ColorScheme.fromSwatch().copyWith(
+          primary: const Color(0xFFA8D5BA),   // 🌿 pastel green
+          secondary: const Color(0xFFB9FBC0), // 🍃 mint green
+        ),
         appBarTheme: const AppBarTheme(
           elevation: 0,
           centerTitle: true,
+          backgroundColor: Color(0xFFA8D5BA), // 🌿 pastel green
+          foregroundColor: Colors.white,
+          titleTextStyle: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+          ),
         ),
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: const Color(0xFFA8D5BA),
+            foregroundColor: Colors.white,
+            textStyle: const TextStyle(fontSize: 18),
+            padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 24),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          ),
+        ),
+        textTheme: ThemeData.light().textTheme.apply(
+              bodyColor: Colors.black87,
+              displayColor: Colors.black87,
+            ),
+        visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
       home: const SessionChecker(),
       routes: {

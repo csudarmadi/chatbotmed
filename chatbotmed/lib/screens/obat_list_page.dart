@@ -140,106 +140,172 @@ class _ObatListPageState extends State<ObatListPage> {
           'Daftar Obat',
           style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
         ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.search),
-            onPressed: () => showSearch(
-              context: context,
-              delegate: _ObatSearchDelegate(_refreshData),
-            ),
-          ),
-          IconButton(
-            icon: const Icon(Icons.chat),
-            onPressed: () => Navigator.pushNamed(context, '/chatbot'),
-          ),
-          IconButton(
-            icon: const Icon(Icons.history),
-            onPressed: () => Navigator.pushNamed(context, '/obat-history'),
-          ),
+        //actions: [
+          //IconButton(
+          //  icon: const Icon(Icons.search, size: 32),
+          //  onPressed: () => showSearch(
+          //    context: context,
+          //    delegate: _ObatSearchDelegate(_refreshData),
+          //  ),
+          //),
+          //IconButton(
+          //  icon: const Icon(Icons.chat),
+          //  onPressed: () => Navigator.pushNamed(context, '/chatbot'),
+          //),
+          //IconButton(
+          //  icon: const Icon(Icons.history, size: 32),
+          //  onPressed: () => Navigator.pushNamed(context, '/obat-history'),
+          //),
           //IconButton(
           //  icon: const Icon(Icons.delete_forever),
           //  onPressed: () => _handleReset(), // No context passed here
           //),
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: _logout,
-          ),
-        ],
+          //IconButton(
+          //  icon: const Icon(Icons.logout),
+          //  onPressed: _logout,
+          //),
+        //],
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _navigateToInputPage(),
         child: const Icon(Icons.add),
       ),
-      body: FutureBuilder<List<Obat>>(
-        future: _obatListFuture,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
-
-          if (snapshot.hasError) {
-            //_hasError = true;
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Text('Gagal memuat data obat'),
-                  ElevatedButton(
-                    onPressed: _loadData,
-                    child: const Text('Coba Lagi'),
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                _buildActionIcon(
+                  icon: Icons.search,
+                  label: 'Cari Obat',
+                  onTap: () => showSearch(
+                    context: context,
+                    delegate: _ObatSearchDelegate(_refreshData),
                   ),
-                ],
-              ),
-            );
-          }
+                ),
+                _buildActionIcon(
+                  icon: Icons.chat,
+                  label: 'Chatbot',
+                  onTap: () => Navigator.pushNamed(context, '/chatbot'),
+                ),
+                _buildActionIcon(
+                  icon: Icons.history,
+                  label: 'Riwayat',
+                  onTap: () => Navigator.pushNamed(context, '/obat-history'),
+                ),
+                _buildActionIcon(
+                  icon: Icons.logout,
+                  label: 'Logout',
+                  onTap: _logout,
+                ),
+              ],
+            ),
+          ),
+          const Divider(),
+          Expanded(
+            child: FutureBuilder<List<Obat>>(
+              future: _obatListFuture,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
 
-          final obatList = _filterObatList(
-            snapshot.data ?? [],
-            _searchController.text,
-          );
-
-          if (obatList.isEmpty) {
-            return const Center(
-              child: Text('Tidak ada obat tersedia'),
-            );
-          }
-
-          return Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: TextField(
-                  controller: _searchController,
-                  decoration: InputDecoration(
-                    labelText: 'Cari Obat',
-                    prefixIcon: const Icon(Icons.search),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
+                if (snapshot.hasError) {
+                  //_hasError = true;
+                  return Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Text('Gagal memuat data obat'),
+                        ElevatedButton(
+                          onPressed: _loadData,
+                          child: const Text('Coba Lagi'),
+                        ),
+                      ],
                     ),
-                  ),
-                ),
-              ),
-              Expanded(
-                child: RefreshIndicator(
-                  onRefresh: _refreshData,
-                  child: ListView.builder(
-                    itemCount: obatList.length,
-                    itemBuilder: (context, index) {
-                      final obat = obatList[index];
-                      return _buildObatCard(obat);
-                    },
-                  ),
-                ),
-              ),
-            ],
-          );
-        },
+                  );
+                }
+
+                final obatList = _filterObatList(
+                  snapshot.data ?? [],
+                  _searchController.text,
+                );
+
+                if (obatList.isEmpty) {
+                  return const Center(
+                    child: Text('Tidak ada obat tersedia'),
+                  );
+                }
+
+                return Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: TextField(
+                        controller: _searchController,
+                        decoration: InputDecoration(
+                          labelText: 'Cari Obat',
+                          prefixIcon: const Icon(Icons.search),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      child: RefreshIndicator(
+                        onRefresh: _refreshData,
+                        child: ListView.builder(
+                          itemCount: obatList.length,
+                          itemBuilder: (context, index) {
+                            final obat = obatList[index];
+                            return _buildObatCard(obat);
+                          },
+                        ),
+                      ),
+                    ),
+                  ],
+                );
+              },
+            ),
+          )
+        ]
+      )
+    );
+  }
+
+  Widget _buildActionIcon({
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          CircleAvatar(
+            radius: 32,
+            backgroundColor:const Color(0xFFB9FBC0), // Mint green
+            child: Icon(icon, size: 36, color: Colors.teal.shade700),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            label,
+            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+          ),
+        ],
       ),
     );
   }
 
   Widget _buildObatCard(Obat obat) {
     return Card(
+      elevation: 2,
+      color: const Color(0xFFDAF5DC), // light pastel green
+      shadowColor: Colors.green.shade100,
       margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       child: ListTile(
         title: Text(obat.nama),

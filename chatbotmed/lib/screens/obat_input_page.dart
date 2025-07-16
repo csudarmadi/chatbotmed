@@ -182,7 +182,7 @@ class _ObatInputPageState extends State<ObatInputPage> {
                     Expanded(
                       child: _buildInputField(
                         controller: _qtyController,
-                        label: 'Jumlah Stok',
+                        label: 'Stok',
                         keyboardType: TextInputType.number,
                         validator: (value) {
                           if (value == null || value.isEmpty) {
@@ -195,11 +195,11 @@ class _ObatInputPageState extends State<ObatInputPage> {
                         },
                       ),
                     ),
-                    const SizedBox(width: 16),
+                    const SizedBox(width: 12),
                     Expanded(
                       child: _buildInputField(
                         controller: _dosisController,
-                        label: 'Dosis per Hari',
+                        label: 'Dosis/Hari',
                         keyboardType: TextInputType.number,
                         validator: (value) {
                           if (value == null || value.isEmpty) {
@@ -212,22 +212,24 @@ class _ObatInputPageState extends State<ObatInputPage> {
                         },
                       ),
                     ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: _buildInputField(
+                        controller: _jumlahDosisController,
+                        label: 'Jml/Dosis',
+                        keyboardType: TextInputType.number,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Jumlah per dosis harus diisi';
+                          }
+                          if (int.tryParse(value) == null) {
+                            return 'Masukkan angka yang valid';
+                          }
+                          return null;
+                        },
+                      ),
+                    ),
                   ],
-                ),
-                const SizedBox(height: 20),
-                _buildInputField(
-                  controller: _jumlahDosisController,
-                  label: 'Jumlah per Dosis',
-                  keyboardType: TextInputType.number,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Jumlah per dosis harus diisi';
-                    }
-                    if (int.tryParse(value) == null) {
-                      return 'Masukkan angka yang valid';
-                    }
-                    return null;
-                  },
                 ),
                 const SizedBox(height: 20),
                 _buildInputField(
@@ -336,11 +338,13 @@ class _ObatInputPageState extends State<ObatInputPage> {
 
   Widget _buildSaveButton() {
     return ElevatedButton(
-      onPressed: _saveObat,
       style: ElevatedButton.styleFrom(
+        backgroundColor: const Color(0xFFA8D5BA), // pastel green
+        foregroundColor: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         padding: const EdgeInsets.symmetric(vertical: 16),
-        minimumSize: const Size.fromHeight(50),
       ),
+      onPressed: _saveObat,
       child: Text(
         widget.obat == null ? 'Simpan Obat' : 'Update Obat',
         style: const TextStyle(fontSize: 20),
