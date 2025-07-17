@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import '../models/obat.dart';
 import '../services/obat_service.dart';
 import '../services/reminder_service.dart';
@@ -85,8 +86,6 @@ class _ObatInputPageState extends State<ObatInputPage> {
     if (!_formKey.currentState!.validate()) return;
 
     try {
-      await ReminderService.initialize();
-
       final obat = Obat(
         nama: _namaController.text,
         qty: int.parse(_qtyController.text),
@@ -108,22 +107,13 @@ class _ObatInputPageState extends State<ObatInputPage> {
       if (!mounted) return;
 
       // Schedule reminders for each medication time
+      ReminderService.cancelAllReminders();
       for (final timeOfDay in obat.jadwal) {
-        // Convert TimeOfDay to DateTime for today
-        final now = DateTime.now();
-        final scheduledDateTime = DateTime(
-          now.year,
-          now.month,
-          now.day,
-          timeOfDay.hour,
-          timeOfDay.minute,
-        );
-
-        await ReminderService.scheduleMedicationReminder(
-          id: '${obat.nama}${timeOfDay.hour}${timeOfDay.minute}'.hashCode,
+        final time = Time(timeOfDay.hour, timeOfDay.minute);
+        await ReminderService.scheduleDailyReminder(
+          id: '${obat.nama}${time.hour}${time.minute}'.hashCode,
           medicineName: obat.nama,
-          scheduledTime: scheduledDateTime,
-          isRepeating: true, // Set to true for daily repeats
+          time: time,
         );
       }
 
@@ -193,7 +183,7 @@ class _ObatInputPageState extends State<ObatInputPage> {
                     Expanded(
                       child: _buildInputField(
                         controller: _qtyController,
-                        label: 'Jumlah Stok',
+                        label: 'Stok',
                         keyboardType: TextInputType.number,
                         validator: (value) {
                           if (value == null || value.isEmpty) {
@@ -206,11 +196,11 @@ class _ObatInputPageState extends State<ObatInputPage> {
                         },
                       ),
                     ),
-                    const SizedBox(width: 16),
+                    const SizedBox(width: 12),
                     Expanded(
                       child: _buildInputField(
                         controller: _dosisController,
-                        label: 'Dosis per Hari',
+                        label: 'Dosis/Hari',
                         keyboardType: TextInputType.number,
                         validator: (value) {
                           if (value == null || value.isEmpty) {
@@ -223,34 +213,36 @@ class _ObatInputPageState extends State<ObatInputPage> {
                         },
                       ),
                     ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: _buildInputField(
+                        controller: _jumlahDosisController,
+                        label: 'Jml/Dosis',
+                        keyboardType: TextInputType.number,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Jumlah per dosis harus diisi';
+                          }
+                          if (int.tryParse(value) == null) {
+                            return 'Masukkan angka yang valid';
+                          }
+                          return null;
+                        },
+                      ),
+                    ),
                   ],
-                ),
-                const SizedBox(height: 20),
-                _buildInputField(
-                  controller: _jumlahDosisController,
-                  label: 'Jumlah per Dosis',
-                  keyboardType: TextInputType.number,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Jumlah per dosis harus diisi';
-                    }
-                    if (int.tryParse(value) == null) {
-                      return 'Masukkan angka yang valid';
-                    }
-                    return null;
-                  },
                 ),
                 const SizedBox(height: 20),
                 _buildInputField(
                   controller: _usageController,
                   label: 'Catatan Penggunaan',
-                  maxLines: 3,
+                  maxLines: 2,
                 ),
                 const SizedBox(height: 20),
                 _buildDateSelector(),
                 const SizedBox(height: 20),
                 _buildTimeScheduleSection(),
-                const SizedBox(height: 24),
+                const SizedBox(height: 20),
                 _buildSaveButton(),
               ],
             ),
@@ -271,8 +263,21 @@ class _ObatInputPageState extends State<ObatInputPage> {
       controller: controller,
       decoration: InputDecoration(
         labelText: label,
-        labelStyle: const TextStyle(fontSize: 18),
-        border: const OutlineInputBorder(),
+        labelStyle: const TextStyle(fontSize: 14),
+        filled: true,
+        fillColor: const Color(0xFFFFFFFF), // putih
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Color(0xFFA8D5BA)), // hijau pastel
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Color(0xFFA8D5BA), width: 1.5),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Color(0xFF6CB28E), width: 2),
+        ),
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 16,
           vertical: 14,
@@ -282,11 +287,19 @@ class _ObatInputPageState extends State<ObatInputPage> {
       keyboardType: keyboardType,
       validator: validator,
       maxLines: maxLines,
+      textCapitalization: TextCapitalization.characters,
+      onChanged: (value) {
+        controller.value = controller.value.copyWith(
+          text: value.toUpperCase(),
+          selection: TextSelection.collapsed(offset: value.length),
+        );
+      },
     );
   }
 
   Widget _buildDateSelector() {
     return Card(
+      color: const Color(0xFFE9FCEB), // 🌿 hijau pastel terang, sama seperti input box
       elevation: 2,
       child: ListTile(
         title: Text(
@@ -333,6 +346,7 @@ class _ObatInputPageState extends State<ObatInputPage> {
         ElevatedButton(
           onPressed: () => _selectTime(context),
           style: ElevatedButton.styleFrom(
+            backgroundColor: const Color(0xFF66BB6A),
             padding: const EdgeInsets.symmetric(vertical: 14),
             minimumSize: const Size.fromHeight(50),
           ),
@@ -347,14 +361,16 @@ class _ObatInputPageState extends State<ObatInputPage> {
 
   Widget _buildSaveButton() {
     return ElevatedButton(
-      onPressed: _saveObat,
       style: ElevatedButton.styleFrom(
+        backgroundColor: const Color(0xFF66BB6A),
+        foregroundColor: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         padding: const EdgeInsets.symmetric(vertical: 16),
-        minimumSize: const Size.fromHeight(50),
       ),
+      onPressed: _saveObat,
       child: Text(
         widget.obat == null ? 'Simpan Obat' : 'Update Obat',
-        style: const TextStyle(fontSize: 20),
+        style: const TextStyle(fontSize: 18),
       ),
     );
   }

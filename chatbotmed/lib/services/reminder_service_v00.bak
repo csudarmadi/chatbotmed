@@ -1,0 +1,50 @@
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+
+class ReminderService {
+  static final _notifications = FlutterLocalNotificationsPlugin();
+
+  static Future<void> initialize() async {
+    const android = AndroidInitializationSettings('@mipmap/ic_launcher');
+    const ios = IOSInitializationSettings();
+    const settings = InitializationSettings(android: android, iOS: ios);
+
+    await _notifications.initialize(settings);
+  }
+
+  static Future<void> scheduleDailyReminder({
+    required int id,
+    required String medicineName,
+    required Time time,
+  }) async {
+    const androidDetails = AndroidNotificationDetails(
+      'daily_reminder_channel',
+      'Daily Reminders',
+      channelDescription: 'Reminders to take your medication daily',
+      importance: Importance.max,
+      playSound: true,
+      priority: Priority.high,
+    );
+
+    const iosDetails = IOSNotificationDetails();
+    final notificationDetails = NotificationDetails(
+      android: androidDetails,
+      iOS: iosDetails,
+    );
+
+    await _notifications.showDailyAtTime(
+      id,
+      'Waktunya Minum Obat',
+      'Jangan lupa minum $medicineName',
+      time,
+      notificationDetails,
+    );
+  }
+
+  static Future<void> cancelReminder(int id) async {
+    await _notifications.cancel(id);
+  }
+
+  static Future<void> cancelAllReminders() async {
+    await _notifications.cancelAll();
+  }
+}

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart'; // Add this import
+import 'package:shared_preferences/shared_preferences.dart';
+import '../models/chat.dart';
 import 'dart:convert';
 import 'dart:async';
 
@@ -18,6 +20,12 @@ class _ChatbotPageState extends State<ChatbotPage> {
   final ScrollController _scrollController = ScrollController();
   final String _apiUrl = "http://192.168.100.204:5000/chat"; // Move to config
   
+  @override
+  void initState() {
+    super.initState();
+    _loadChatHistory();
+  }
+
   @override
   void dispose() {
     _controller.dispose();
@@ -63,6 +71,9 @@ class _ChatbotPageState extends State<ChatbotPage> {
             timestamp: DateTime.now(),
           ));
         });
+
+        await _saveChatHistory(); // Simpan riwayat setelah bot menjawab
+
       } else {
         throw "Request failed with status ${response.statusCode}";
       }
@@ -100,6 +111,22 @@ class _ChatbotPageState extends State<ChatbotPage> {
         );
       }
     });
+  }
+
+  Future<void> _loadChatHistory() async {
+    final prefs = await SharedPreferences.getInstance();
+    final jsonList = prefs.getStringList('chat_history') ?? [];
+    final loadedMessages = jsonList.map((e) => ChatMessage.fromJson(jsonDecode(e))).toList();
+    setState(() {
+      _messages.clear();
+      _messages.addAll(loadedMessages);
+    });
+  }
+
+  Future<void> _saveChatHistory() async {
+    final prefs = await SharedPreferences.getInstance();
+    final jsonList = _messages.map((msg) => jsonEncode(msg.toJson())).toList();
+    await prefs.setStringList('chat_history', jsonList);
   }
 
   @override
@@ -204,20 +231,6 @@ class _ChatbotPageState extends State<ChatbotPage> {
   }
 }
 
-class ChatMessage {
-  final String text;
-  final bool isUser;
-  final DateTime timestamp;
-  final bool isError;
-
-  ChatMessage({
-    required this.text,
-    required this.isUser,
-    required this.timestamp,
-    this.isError = false,
-  });
-}
-
 class ChatBubble extends StatelessWidget {
   final ChatMessage message;
   final double fontSize;
@@ -247,13 +260,18 @@ class ChatBubble extends StatelessWidget {
             padding: EdgeInsets.all(16),
             decoration: BoxDecoration(
               color: message.isUser 
-                  ? Colors.teal[100] 
-                  : Colors.grey[200],
+                  ? Colors.teal[200] 
+                  : Colors.grey[300],
               borderRadius: BorderRadius.only(
                 topLeft: Radius.circular(20),
                 topRight: Radius.circular(20),
                 bottomLeft: Radius.circular(message.isUser ? 20 : 0),
                 bottomRight: Radius.circular(message.isUser ? 0 : 20),
+              ),
+              border: Border.all(
+                color: message.isUser 
+                  ? Colors.teal 
+                  : Colors.grey.shade500,
               ),
             ),
             child: Text(

@@ -13,6 +13,7 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
+        isCoreLibraryDesugaringEnabled = true
     }
 
     kotlinOptions {
@@ -54,6 +55,7 @@ dependencies {
     // Add these WebView dependencies
     implementation("androidx.webkit:webkit:1.8.0")
     implementation("com.google.code.gson:gson:2.10.1") // For JSON handling
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
 }
 
 flutter {

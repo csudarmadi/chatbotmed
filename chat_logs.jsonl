@@ -31,3 +31,9 @@
 {"timestamp": "2025-07-16T10:53:13.885524", "user": "Apa itu metformin?", "bot": "Obat yang menurunkan kadar gula darah yang tinggi pada penderita diabetes tipe 2."}
 {"timestamp": "2025-07-16T10:53:22.112468", "user": "Apa itu amlodipine", "bot": "Menurunkan tekanan darah pada hipertensi dan meredakan angina kronis dengan melebarkan pembuluh darah."}
 {"timestamp": "2025-07-16T10:53:39.548206", "user": "Bagaimana jika amlodipine diminum bersamaan dengan metformin?", "bot": "{'dewasa': '5 mg sekali sehari (maks 10 mg), mulai 2,5 mg pada pasien lanjut usia atau berisiko.', 'anak_≥6_tahun': '2,5-5 mg sekali sehari.'}"}
+{"timestamp": "2025-07-16T21:14:56.534277", "user": "apa itu metformin?", "bot": "Obat yang menurunkan kadar gula darah yang tinggi pada penderita diabetes tipe 2."}
+{"timestamp": "2025-07-16T21:15:19.528636", "user": "apa efek samping metformin?", "bot": "Mual, Diare, Sakit perut, Kembung"}
+{"timestamp": "2025-07-16T21:15:38.266352", "user": "Kapan waktu yang tepat meminum metformin?", "bot": "500 mg sekali sehari, dapat ditingkatkan secara bertahap sesuai anjuran dokter."}
+{"timestamp": "2025-07-16T21:16:04.386899", "user": "Berapa dosis maksimum metformin dalam satu hari?", "bot": "500 mg sekali sehari, dapat ditingkatkan secara bertahap sesuai anjuran dokter."}
+{"timestamp": "2025-07-16T23:15:29.885839", "user": "apa itu rosuvastatin", "bot": "Menurunkan LDL dan trigliserida serta meningkatkan HDL untuk menurunkan risiko kardiovaskular pada pasien dewasa, lansia, dan beberapa anak."}
+{"timestamp": "2025-07-16T23:15:47.694537", "user": "bagaimana cara meminum rosuvastatin?", "bot": "Dewasa: awal 5-10 mg sekali sehari, naik hingga maksimal 20 mg (hiperkolesterolemia ringan) atau 40 mg (risiko kardiovaskular tinggi); lansia >70 tahun: 5 mg; anak 6-17 tahun: 5-20 mg."}

@@ -4,7 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/obat.dart';
 import '../services/obat_service.dart';
 import 'obat_input_page.dart';
-import '../services/test_helpers.dart';
+//import '../services/test_helpers.dart';
 
 class ObatListPage extends StatefulWidget {
   const ObatListPage({super.key});
@@ -49,9 +49,19 @@ class _ObatListPageState extends State<ObatListPage> {
 
   Future<void> _confirmTaken(Obat obat) async {
     try {
-      final updatedObat = obat..qty -= obat.jumlahPerDosis;
-      await ObatService.updateObat(updatedObat);
-      if (mounted) await _refreshData();
+      final success = await ObatService.consumeObatIfStockAvailable(obat.nama);
+      if (mounted) {
+        if (success) {
+          await _refreshData(); // refresh tampilan setelah update
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Stok obat tidak mencukupi!'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -85,30 +95,30 @@ class _ObatListPageState extends State<ObatListPage> {
     }
   }
 
-  Future<void> _handleReset() async {
-    try {
-      await TestHelper.fullReset();
-      
+  //Future<void> _handleReset() async {
+  //  try {
+  //    await TestHelper.fullReset();
+  //    
       // Proper mounted check for State's context
-      if (!mounted) return;
+  //    if (!mounted) return;
       
       // Refresh UI
-      setState(() {});
+  //    setState(() {});
       
       // Get fresh context for Scaffold
-      final freshContext = context;
-      if (!freshContext.mounted) return;
+  //    final freshContext = context;
+  //    if (!freshContext.mounted) return;
       
-      ScaffoldMessenger.of(freshContext).showSnackBar(
-        const SnackBar(content: Text('Data berhasil direset')),
-      );
-    } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: ${e.toString()}')),
-      );
-    }
-  }
+  //    ScaffoldMessenger.of(freshContext).showSnackBar(
+  //      const SnackBar(content: Text('Data berhasil direset')),
+  //    );
+  //  } catch (e) {
+  //    if (!mounted) return;
+  //    ScaffoldMessenger.of(context).showSnackBar(
+  //      SnackBar(content: Text('Error: ${e.toString()}')),
+  //    );
+  //  }
+  //}
 
   List<Obat> _filterObatList(List<Obat> obatList, String query) {
     if (query.isEmpty) return obatList;
@@ -126,138 +136,253 @@ class _ObatListPageState extends State<ObatListPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: const Color(0xFF388E3C), // Hijau tua
         title: const Text(
           'Daftar Obat',
           style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
         ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.search),
-            onPressed: () => showSearch(
-              context: context,
-              delegate: _ObatSearchDelegate(_refreshData),
+        //actions: [
+          //IconButton(
+          //  icon: const Icon(Icons.search, size: 32),
+          //  onPressed: () => showSearch(
+          //    context: context,
+          //    delegate: _ObatSearchDelegate(_refreshData),
+          //  ),
+          //),
+          //IconButton(
+          //  icon: const Icon(Icons.chat),
+          //  onPressed: () => Navigator.pushNamed(context, '/chatbot'),
+          //),
+          //IconButton(
+          //  icon: const Icon(Icons.history, size: 32),
+          //  onPressed: () => Navigator.pushNamed(context, '/obat-history'),
+          //),
+          //IconButton(
+          //  icon: const Icon(Icons.delete_forever),
+          //  onPressed: () => _handleReset(), // No context passed here
+          //),
+          //IconButton(
+          //  icon: const Icon(Icons.logout),
+          //  onPressed: _logout,
+          //),
+        //],
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () => _navigateToInputPage(),
+        icon: const Icon(Icons.add),
+        label: const Text('Tambah Obat'),
+        backgroundColor: const Color(0xFF66BB6A), // Hijau terang kontras
+      ),
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                //_buildActionIcon(
+                //  icon: Icons.search,
+                //  label: 'Cari Obat',
+                //  onTap: () => showSearch(
+                //    context: context,
+                //    delegate: _ObatSearchDelegate(_refreshData),
+                //  ),
+                //),
+                _buildActionIcon(
+                  icon: Icons.chat,
+                  label: 'Chatbot',
+                  onTap: () => Navigator.pushNamed(context, '/chatbot'),
+                ),
+                _buildActionIcon(
+                  icon: Icons.history,
+                  label: 'Riwayat',
+                  onTap: () => Navigator.pushNamed(context, '/obat-history'),
+                ),
+                _buildActionIcon(
+                  icon: Icons.logout,
+                  label: 'Logout',
+                  onTap: _logout,
+                ),
+              ],
             ),
           ),
-          IconButton(
-            icon: const Icon(Icons.chat),
-            onPressed: () => Navigator.pushNamed(context, '/chatbot'),
+          const Divider(),
+          Expanded(
+            child: FutureBuilder<List<Obat>>(
+              future: _obatListFuture,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+
+                if (snapshot.hasError) {
+                  //_hasError = true;
+                  return Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Text('Gagal memuat data obat'),
+                        ElevatedButton(
+                          onPressed: _loadData,
+                          child: const Text('Coba Lagi'),
+                        ),
+                      ],
+                    ),
+                  );
+                }
+
+                final obatList = _filterObatList(
+                  snapshot.data ?? [],
+                  _searchController.text,
+                );
+
+                if (obatList.isEmpty) {
+                  return const Center(
+                    child: Text('Tidak ada obat tersedia'),
+                  );
+                }
+
+                return Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: TextField(
+                        controller: _searchController,
+                        decoration: InputDecoration(
+                          labelText: 'Cari Obat',
+                          prefixIcon: const Icon(Icons.search),
+                          filled: true,
+                          fillColor: const Color(0xFFE9FCEB),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      child: RefreshIndicator(
+                        onRefresh: _refreshData,
+                        child: ListView.builder(
+                          itemCount: obatList.length,
+                          itemBuilder: (context, index) {
+                            final obat = obatList[index];
+                            return _buildObatCard(obat);
+                          },
+                        ),
+                      ),
+                    ),
+                  ],
+                );
+              },
+            ),
+          )
+        ]
+      )
+    );
+  }
+
+  Widget _buildActionIcon({
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          CircleAvatar(
+            radius: 34,
+            backgroundColor: Colors.teal[800],
+            child: Icon(icon, size: 36, color: Colors.teal.shade700),
           ),
-          IconButton(
-            icon: const Icon(Icons.history),
-            onPressed: () => Navigator.pushNamed(context, '/obat-history'),
-          ),
-          IconButton(
-            icon: const Icon(Icons.delete_forever),
-            onPressed: () => _handleReset(), // No context passed here
-          ),
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: _logout,
+          const SizedBox(height: 6),
+          Text(
+            label,
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
           ),
         ],
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => _navigateToInputPage(),
-        child: const Icon(Icons.add),
-      ),
-      body: FutureBuilder<List<Obat>>(
-        future: _obatListFuture,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
-
-          if (snapshot.hasError) {
-            //_hasError = true;
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Text('Gagal memuat data obat'),
-                  ElevatedButton(
-                    onPressed: _loadData,
-                    child: const Text('Coba Lagi'),
-                  ),
-                ],
-              ),
-            );
-          }
-
-          final obatList = _filterObatList(
-            snapshot.data ?? [],
-            _searchController.text,
-          );
-
-          if (obatList.isEmpty) {
-            return const Center(
-              child: Text('Tidak ada obat tersedia'),
-            );
-          }
-
-          return Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: TextField(
-                  controller: _searchController,
-                  decoration: InputDecoration(
-                    labelText: 'Cari Obat',
-                    prefixIcon: const Icon(Icons.search),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                ),
-              ),
-              Expanded(
-                child: RefreshIndicator(
-                  onRefresh: _refreshData,
-                  child: ListView.builder(
-                    itemCount: obatList.length,
-                    itemBuilder: (context, index) {
-                      final obat = obatList[index];
-                      return _buildObatCard(obat);
-                    },
-                  ),
-                ),
-              ),
-            ],
-          );
-        },
       ),
     );
   }
 
   Widget _buildObatCard(Obat obat) {
     return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      elevation: 2,
+      color: const Color(0xFFE9FCEB), // light pastel green
+      shadowColor: Colors.green.shade200,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: const BorderSide(color: Color(0xFFA8D5BA), width: 1.2),
+      ),
+      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       child: ListTile(
-        title: Text(obat.nama),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        title: Text(
+          obat.nama,
+          style: const TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: Colors.black87,
+          ),
+        ),
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Stok: ${obat.qty}'),
-            Text('Dosis: ${obat.jumlahPerDosis}x${obat.dosisPerHari}/hari'),
+            const SizedBox(height: 6),
+            Text(
+              'Stok: ${obat.qty}',
+              style: const TextStyle(fontSize: 16),
+            ),
+            Text(
+              'Dosis: ${obat.jumlahPerDosis}x${obat.dosisPerHari}/hari',
+              style: const TextStyle(fontSize: 16),
+            ),
+            // Text(
+            //   'Jadwal: ${obat.jadwal.map((t) => t.format(context)).join(', ')}',
+            //   style: const TextStyle(fontSize: 16),
+            // ),
             if (obat.perluBeliObat())
-              const Text(
-                'Perlu beli obat!',
-                style: TextStyle(color: Colors.red),
+              const Padding(
+                padding: EdgeInsets.only(top: 4),
+                child: Text(
+                  'Perlu beli obat!',
+                  style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold, fontSize: 14),
+                ),
               ),
           ],
         ),
-        trailing: Row(
-          mainAxisSize: MainAxisSize.min,
+/*         trailing: Wrap(
+          spacing: 4,
           children: [
             IconButton(
-              icon: const Icon(Icons.medical_services),
+              icon: const Icon(Icons.medical_services, size: 28, color: Color(0xFF4CAF50)),
               onPressed: () => _confirmTaken(obat),
               tooltip: 'Konfirmasi Minum Obat',
             ),
             IconButton(
-              icon: const Icon(Icons.edit),
+              icon: const Icon(Icons.edit, size: 26, color: Colors.teal),
               onPressed: () => _navigateToInputPage(obat: obat),
               tooltip: 'Edit Obat',
             ),
+          ],
+        ), */
+        trailing: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            IconButton(
+              icon: Icon(Icons.medical_services),
+              onPressed: () => _confirmTaken(obat),
+            ),
+            Text('Konsumsi', style: TextStyle(fontSize: 12)),
+
+            SizedBox(height: 8),
+
+            IconButton(
+              icon: Icon(Icons.edit),
+              onPressed: () => _navigateToInputPage(obat: obat),
+            ),
+            Text('Edit', style: TextStyle(fontSize: 12)),
           ],
         ),
         onTap: () => _showObatDetails(context, obat),
@@ -328,7 +453,7 @@ class _ObatListPageState extends State<ObatListPage> {
   }
 }
 
-class _ObatSearchDelegate extends SearchDelegate {
+/* class _ObatSearchDelegate extends SearchDelegate {
   final Function() refreshData;
 
   _ObatSearchDelegate(this.refreshData);
@@ -398,4 +523,4 @@ class _ObatSearchDelegate extends SearchDelegate {
       },
     );
   }
-}
+} */

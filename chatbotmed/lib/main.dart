@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'screens/login_page.dart';
 import 'screens/obat_list_page.dart';
 import 'screens/chatbot_page.dart';
-import 'screens/obat_history_page_v00.dart';
-import 'services/reminder_service.dart'; // Add this import
+import 'screens/obat_history_page.dart';
+import 'services/reminder_service.dart';
 
 // Constants
 const String appTitle = 'Pendamping Obat';
@@ -19,14 +19,10 @@ class AppRoutes {
   static const obatHistory = '/obat-history';
 }
 
-final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-    FlutterLocalNotificationsPlugin();
-
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
-  await ReminderService.initialize(); // Add this
-
+  await initializeDateFormatting('id_ID', null); // ⬅️ Tambahkan baris ini
+  await ReminderService.initialize(); // Just this
   runApp(MyApp());
 }
 
@@ -42,12 +38,36 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       navigatorKey: navigatorKey,
       theme: ThemeData(
-        primarySwatch: Colors.teal,
-        visualDensity: VisualDensity.adaptivePlatformDensity,
+        scaffoldBackgroundColor: const Color(0xFFDEFDE0), // 🌱 background soft green
+        primaryColor: const Color(0xFFA8D5BA), // 🌿 pastel green
+        colorScheme: ColorScheme.fromSwatch().copyWith(
+          primary: const Color(0xFFA8D5BA),   // 🌿 pastel green
+          secondary: const Color(0xFFB9FBC0), // 🍃 mint green
+        ),
         appBarTheme: const AppBarTheme(
           elevation: 0,
           centerTitle: true,
+          backgroundColor: Color(0xFF388E3C), // 🌿 pastel green
+          foregroundColor: Colors.white,
+          titleTextStyle: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+          ),
         ),
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: const Color(0xFFA8D5BA),
+            foregroundColor: Colors.white,
+            textStyle: const TextStyle(fontSize: 18),
+            padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 24),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          ),
+        ),
+        textTheme: ThemeData.light().textTheme.apply(
+              bodyColor: Colors.black87,
+              displayColor: Colors.black87,
+            ),
+        visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
       home: const SessionChecker(),
       routes: {
@@ -82,7 +102,7 @@ class _SessionCheckerState extends State<SessionChecker> {
   Future<void> _checkSession() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      await prefs.clear();
+      //await prefs.clear();
       final nama = prefs.getString('nama');
 
       if (!mounted) return;
